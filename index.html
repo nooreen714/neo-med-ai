@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeoMed AI - Smart Health Assistant</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="min-h-screen flex flex-col md:flex-row selection:bg-cyan-500/30 selection:text-cyan-200">
+
+  <!-- Mobile Top Header -->
+  <header class="md:hidden flex items-center justify-between px-4 py-3 bg-[#081123] border-b border-[#152238] sticky top-0 z-40">
+    <div class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#00d2ff] to-[#0284c7] flex items-center justify-center shadow-lg shadow-cyan-500/20">
+        <svg class="w-5 h-5 text-[#061224]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3z"/>
+          <path d="M12 8v8M8 12h8" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="font-bold text-base leading-tight tracking-tight text-white">NeoMed <span class="text-[#00d2ff]">AI</span></div>
+        <div class="text-[11px] text-slate-400">Smart Health Assistant</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="openApiKeyModal()" title="Configure Gemini API Key" class="p-2 rounded-lg bg-[#0d1c36] border border-[#1d355e] text-cyan-400 hover:bg-[#13284b]">
+        <i data-lucide="key" class="w-4 h-4"></i>
+      </button>
+      <button id="mobileMenuBtn" onclick="toggleMobileSidebar()" class="p-2 rounded-lg bg-[#0d1c36] border border-[#1d355e] text-slate-200">
+        <i data-lucide="menu" class="w-5 h-5"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Backdrop -->
+  <div id="sidebarBackdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 hidden md:hidden"></div>
+
+  <!-- ===================================================================== -->
+  <!-- LEFT NAVIGATION SIDEBAR (~230px fixed width on desktop)               -->
+  <!-- ===================================================================== -->
+  <aside id="leftSidebar" class="fixed md:sticky top-0 left-0 z-50 h-screen w-[235px] shrink-0 bg-[#081123] border-r border-[#152238] flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 select-none">
+    <div>
+      <!-- Top Brand Header -->
+      <div class="px-4 pt-5 pb-4 flex items-center justify-between border-b border-[#111e33]">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="navigateTo('home')">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#00d2ff] to-[#0088cc] flex items-center justify-center shadow-lg shadow-cyan-500/25 shrink-0">
+            <svg class="w-5 h-5 text-[#041022]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="M12 8v6M9 11h6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="font-bold text-[16px] leading-tight text-white tracking-tight">NeoMed <span class="text-[#00d2ff]">AI</span></h1>
+            <p class="text-[11px] text-slate-400 font-medium mt-0.5">Smart Health Assistant</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Menu Items -->
+      <nav id="sidebarNav" class="px-3 py-3 space-y-1 overflow-y-auto max-h-[calc(100vh-195px)]">
+        <!-- Populated cleanly via JS so active states & dots match every tab -->
+      </nav>
+    </div>
+
+    <!-- Bottom Emergency SOS Card + API Key Quick Badge -->
+    <div class="p-3 space-y-2">
+      <button onclick="openApiKeyModal()" class="w-full flex items-center justify-between px-3 py-1.5 rounded-lg bg-[#0d1b33] hover:bg-[#132647] border border-[#1b3156] text-[11px] text-slate-300 transition">
+        <span class="flex items-center gap-1.5">
+          <span id="apiKeyStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+          <span id="apiKeyStatusLabel">Set Gemini API Key</span>
+        </span>
+        <i data-lucide="key-round" class="w-3.5 h-3.5 text-cyan-400"></i>
+      </button>
+
+      <div onclick="navigateTo('emergency')" class="cursor-pointer rounded-xl bg-gradient-to-r from-[#4a1216] to-[#3b0e12] hover:from-[#5c161b] hover:to-[#471116] border border-[#7f1d1d] p-3 flex items-center gap-3 transition shadow-lg shadow-red-950/30 group">
+        <div class="w-9 h-9 rounded-full bg-[#dc2626] group-hover:scale-105 transition flex items-center justify-center shrink-0 shadow-md shadow-red-600/40">
+          <i data-lucide="phone" class="w-4 h-4 text-white"></i>
+        </div>
+        <div class="min-w-0">
+          <div class="text-[13px] font-bold text-white leading-tight">Emergency SOS</div>
+          <div class="text-[11px] font-medium text-red-400 leading-tight mt-0.5">Need immediate help?</div>
+          <div class="text-[10px] text-slate-400 leading-tight mt-0.5">Tap to call emergency</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN APPLICATION WORKSPACE (Dynamically switches between 10 pages)    -->
+  <!-- ===================================================================== -->
+  <main id="mainWorkspace" class="flex-1 min-w-0 min-h-screen flex flex-col">
+
+    <!-- ==================== PAGE 1: HOME ==================== -->
+    <section id="page-home" class="page-view flex-1 flex flex-col xl:flex-row min-h-screen">
+      <!-- Center Main Content -->
+      <div class="flex-1 px-5 sm:px-8 py-6 flex flex-col justify-between max-w-5xl mx-auto w-full">
+        <div>
+          <!-- Greeting Header -->
+          <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
+            <div>
+              <h2 class="text-[28px] sm:text-[32px] font-bold text-white tracking-tight leading-tight">Hello, Aarav!</h2>
+              <p class="text-slate-400 text-[14px] mt-1">I am Dr. Neo, your AI Health Assistant. How can I help you today?</p>
+            </div>
+            <button onclick="openApiKeyModal()" class="hidden sm:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0c1a30] hover:bg-[#132746] border border-[#1c355c] text-xs font-medium text-cyan-300 transition">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-[#00d2ff]"></i>
+              <span>Gemini AI Config</span>
+            </button>
+          </div>
+
+          <!-- Dr. Neo Hero Card -->
+          <div class="rounded-2xl bg-[#0b192e]/90 border border-[#1c3152] p-5 sm:p-6 flex flex-col sm:flex-row items-center gap-6 shadow-xl relative overflow-hidden mb-6">
+            <div class="absolute -right-12 -bottom-12 w-48 h-48 rounded-full bg-cyan-500/5 blur-2xl pointer-events-none"></div>
+
+            <!-- Glowing Cyan Doctor Avatar -->
+            <div class="w-32 h-32 sm:w-36 sm:h-36 rounded-2xl bg-gradient-to-b from-[#00d2ff] to-[#0099cc] flex items-end justify-center shrink-0 shadow-lg shadow-cyan-500/25 overflow-hidden relative border border-cyan-300/30">
+              <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_25%,rgba(255,255,255,0.45),transparent_70%)]"></div>
+              <!-- Stylized 3D Friendly Doctor SVG -->
+              <svg class="w-32 h-32 doctor-float relative z-10" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- White Lab Coat & Shoulders -->
+                <path d="M24 140C24 114 43 102 70 102C97 102 116 114 116 140H24Z" fill="#F8FAFC"/>
+                <path d="M54 103L70 128L86 103" fill="#0284C7"/>
+                <path d="M54 103L64 134L70 124L59 102L54 103Z" fill="#E2E8F0"/>
+                <path d="M86 103L76 134L70 124L81 102L86 103Z" fill="#E2E8F0"/>
+                <!-- Stethoscope -->
+                <path d="M49 107C47 120 53 130 63 131" stroke="#1E293B" stroke-width="3.5" stroke-linecap="round"/>
+                <path d="M91 107C93 120 87 130 77 131" stroke="#1E293B" stroke-width="3.5" stroke-linecap="round"/>
+                <circle cx="91" cy="127" r="5.5" fill="#94A3B8" stroke="#1E293B" stroke-width="2"/>
+                <!-- Neck -->
+                <rect x="61" y="88" width="18" height="18" rx="8" fill="#F1C29B"/>
+                <!-- Ears -->
+                <circle cx="43" cy="66" r="6.5" fill="#EAB388"/>
+                <circle cx="97" cy="66" r="6.5" fill="#EAB388"/>
+                <!-- Head -->
+                <rect x="44" y="34" width="52" height="58" rx="25" fill="#F6C9A4"/>
+                <!-- Hair -->
+                <path d="M43 56C42 36 53 24 71 24C89 24 98 35 97 56C95 44 88 38 76 38C63 38 51 43 43 56Z" fill="#1E293B"/>
+                <path d="M54 27C62 21 79 21 88 29C80 27 65 27 54 27Z" fill="#334155"/>
+                <!-- Glasses -->
+                <rect x="50" y="56" width="16" height="12" rx="4" fill="#FFFFFF" fill-opacity="0.25" stroke="#0F172A" stroke-width="2.4"/>
+                <rect x="74" y="56" width="16" height="12" rx="4" fill="#FFFFFF" fill-opacity="0.25" stroke="#0F172A" stroke-width="2.4"/>
+                <line x1="66" y1="61" x2="74" y2="61" stroke="#0F172A" stroke-width="2.4"/>
+                <!-- Eyes -->
+                <circle cx="58" cy="62" r="2.4" fill="#0F172A"/>
+                <circle cx="82" cy="62" r="2.4" fill="#0F172A"/>
+                <circle cx="58.8" cy="61.2" r="0.8" fill="#FFFFFF"/>
+                <circle cx="82.8" cy="61.2" r="0.8" fill="#FFFFFF"/>
+                <!-- Friendly Smile -->
+                <path d="M63 76C66 80 74 80 77 76" stroke="#9A5B3C" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <!-- Right Copy + Voice Waveform Controls -->
+            <div class="flex-1 text-center sm:text-left">
+              <h3 class="text-[20px] sm:text-[22px] font-bold text-white tracking-tight">
+                I can help you with your <span class="text-[#00d2ff]">health!</span>
+              </h3>
+              <p class="text-slate-400 text-[13.5px] mt-1.5 leading-relaxed">
+                You can ask me about symptoms, medicines, treatments and more.
+              </p>
+
+              <!-- Play Button + Waveform -->
+              <div id="heroVoiceControl" class="mt-4 inline-flex items-center gap-3">
+                <button onclick="speakHeroGreeting()" title="Listen to Dr. Neo" class="w-9 h-9 rounded-full bg-[#00b4d8] hover:bg-[#00d2ff] text-[#041224] flex items-center justify-center transition shadow-md shadow-cyan-500/30 cursor-pointer">
+                  <i data-lucide="volume-2" class="w-4 h-4"></i>
+                </button>
+                <div class="flex items-center gap-1 h-6 px-1" aria-hidden="true">
+                  <span class="wave-bar wave-bar-1 w-1 h-2.5 bg-[#00d2ff] rounded-full"></span>
+                  <span class="wave-bar wave-bar-2 w-1 h-4 bg-[#00d2ff] rounded-full"></span>
+                  <span class="wave-bar wave-bar-3 w-1 h-5 bg-[#38bdf8] rounded-full"></span>
+                  <span class="wave-bar wave-bar-4 w-1 h-3.5 bg-[#00d2ff] rounded-full"></span>
+                  <span class="wave-bar wave-bar-5 w-1 h-2 bg-[#00d2ff] rounded-full"></span>
+                </div>
+                <span id="heroVoiceLabel" class="text-[11px] text-cyan-400/80 font-medium hidden">Speaking...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Home Chat Response Thread (expands seamlessly when chatting on Home) -->
+          <div id="homeChatThread" class="hidden mb-5 space-y-3 max-h-[340px] overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- Bottom Input + Quick Pills + How Can I Help You Today? -->
+        <div class="space-y-5">
+          <!-- Chat Input Box -->
+          <div class="rounded-2xl bg-[#0c1a30] border border-[#1e3557] focus-within:border-[#00d2ff] px-4 py-2.5 flex items-center gap-3 shadow-lg transition">
+            <input
+              id="homeChatInput"
+              type="text"
+              placeholder="Type your message or speak..."
+              onkeydown="if(event.key==='Enter') sendHomeChat()"
+              class="flex-1 bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none"
+            />
+            <button
+              id="homeMicBtn"
+              onclick="startVoiceRecognition('homeChatInput', 'homeMicBtn')"
+              title="Speak your question"
+              class="w-9 h-9 rounded-full bg-[#9333ea] hover:bg-[#a855f7] text-white flex items-center justify-center shrink-0 transition shadow-md shadow-purple-600/30 cursor-pointer"
+            >
+              <i data-lucide="mic" class="w-4 h-4"></i>
+            </button>
+            <button
+              onclick="sendHomeChat()"
+              title="Send message to Dr. Neo"
+              class="w-9 h-9 rounded-full bg-[#00b4d8] hover:bg-[#00d2ff] text-[#051326] flex items-center justify-center shrink-0 transition shadow-md shadow-cyan-500/30 cursor-pointer"
+            >
+              <i data-lucide="send" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- 5 Quick Action Colored Pills Row -->
+          <div class="flex flex-wrap items-center gap-2.5">
+            <button onclick="navigateTo('symptom')" class="px-4 py-2 rounded-full bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-semibold flex items-center gap-2 shadow-md shadow-sky-900/40 transition cursor-pointer">
+              <i data-lucide="stethoscope" class="w-3.5 h-3.5"></i>
+              <span>Symptom Checker</span>
+            </button>
+            <button onclick="navigateTo('medicine')" class="px-4 py-2 rounded-full bg-[#9333ea] hover:bg-[#7e22ce] text-white text-xs font-semibold flex items-center gap-2 shadow-md shadow-purple-900/40 transition cursor-pointer">
+              <i data-lucide="pill" class="w-3.5 h-3.5"></i>
+              <span>Medicine Scanner</span>
+            </button>
+            <button onclick="navigateTo('emergency')" class="px-4 py-2 rounded-full bg-[#dc2626] hover:bg-[#b91c1c] text-white text-xs font-semibold flex items-center gap-2 shadow-md shadow-red-900/40 transition cursor-pointer">
+              <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+              <span>Emergency Help</span>
+            </button>
+            <button onclick="navigateTo('wellness')" class="px-4 py-2 rounded-full bg-[#db2777] hover:bg-[#be185d] text-white text-xs font-semibold flex items-center gap-2 shadow-md shadow-pink-900/40 transition cursor-pointer">
+              <i data-lucide="heart" class="w-3.5 h-3.5"></i>
+              <span>Mental Wellness</span>
+            </button>
+            <button onclick="navigateTo('coach')" class="px-4 py-2 rounded-full bg-[#16a34a] hover:bg-[#15803d] text-white text-xs font-semibold flex items-center gap-2 shadow-md shadow-emerald-900/40 transition cursor-pointer">
+              <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
+              <span>AI Health Coach</span>
+            </button>
+          </div>
+
+          <!-- "How Can I Help You Today?" Section -->
+          <div class="pt-1">
+            <h4 class="text-[15px] font-bold text-white mb-3">How Can I Help You Today?</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+              <!-- Card 1 -->
+              <div onclick="triggerHomeQuickTopic('I have a headache. What might be causing it and what should I do?')" class="neo-card neo-card-hover rounded-xl p-4 cursor-pointer">
+                <div class="w-8 h-8 rounded-lg bg-cyan-500/15 text-cyan-400 flex items-center justify-center mb-2.5">
+                  <i data-lucide="brain" class="w-4 h-4"></i>
+                </div>
+                <div class="text-[13.5px] font-bold text-white">I Have a Headache</div>
+                <p class="text-[11.5px] text-slate-400 mt-1 leading-relaxed">Lets see what might be causing your headache.</p>
+              </div>
+
+              <!-- Card 2 -->
+              <div onclick="triggerHomeQuickTopic('I am experiencing stomach pain. Can you help me understand possible causes?')" class="neo-card neo-card-hover rounded-xl p-4 cursor-pointer">
+                <div class="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center mb-2.5">
+                  <i data-lucide="activity" class="w-4 h-4"></i>
+                </div>
+                <div class="text-[13.5px] font-bold text-white">Stomach Pain</div>
+                <p class="text-[11.5px] text-slate-400 mt-1 leading-relaxed">Let me help you understand your stomach pain.</p>
+              </div>
+
+              <!-- Card 3 -->
+              <div onclick="triggerHomeQuickTopic('I have cold and fever symptoms. What is the best way to feel better?')" class="neo-card neo-card-hover rounded-xl p-4 cursor-pointer">
+                <div class="w-8 h-8 rounded-lg bg-rose-500/15 text-rose-400 flex items-center justify-center mb-2.5">
+                  <i data-lucide="thermometer" class="w-4 h-4"></i>
+                </div>
+                <div class="text-[13.5px] font-bold text-white">Cold &amp; Fever</div>
+                <p class="text-[11.5px] text-slate-400 mt-1 leading-relaxed">We will figure out the best way to help you feel better.</p>
+              </div>
+
+              <!-- Card 4: Skin Problem (Triggers image upload for multimodal analysis) -->
+              <div onclick="document.getElementById('skinPhotoInput').click()" class="neo-card neo-card-hover rounded-xl p-4 cursor-pointer relative">
+                <input type="file" id="skinPhotoInput" accept="image/*" class="hidden" onchange="handleSkinPhotoUpload(event)" />
+                <div class="w-8 h-8 rounded-lg bg-purple-500/15 text-purple-400 flex items-center justify-center mb-2.5">
+                  <i data-lucide="camera" class="w-4 h-4"></i>
+                </div>
+                <div class="text-[13.5px] font-bold text-white">Skin Problem</div>
+                <p class="text-[11.5px] text-slate-400 mt-1 leading-relaxed">Upload a photo and I will analyze your skin issue.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Health Sidebar (~305px fixed on desktop) -->
+      <aside class="w-full xl:w-[305px] shrink-0 bg-[#071022]/90 border-t xl:border-t-0 xl:border-l border-[#152238] p-4 space-y-4 overflow-y-auto">
+        <!-- 1. Health Overview Card -->
+        <div class="neo-card rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-3.5">
+            <h3 class="text-[14px] font-bold text-white">Health Overview</h3>
+            <button onclick="navigateTo('dashboard')" class="text-[11.5px] font-semibold text-[#00d2ff] hover:underline cursor-pointer">View Details</button>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 text-center mb-4">
+            <div class="bg-[#081326] rounded-xl p-2 border border-[#142642]">
+              <i data-lucide="heart" class="w-3.5 h-3.5 text-rose-500 mx-auto mb-1"></i>
+              <div class="text-[16px] font-bold text-white leading-tight">72</div>
+              <div class="text-[10px] text-slate-400">bpm</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">Heart Rate</div>
+            </div>
+            <div class="bg-[#081326] rounded-xl p-2 border border-[#142642]">
+              <i data-lucide="moon" class="w-3.5 h-3.5 text-indigo-400 mx-auto mb-1"></i>
+              <div class="text-[16px] font-bold text-white leading-tight">7.6</div>
+              <div class="text-[10px] text-slate-400">hours</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">Sleep</div>
+            </div>
+            <div class="bg-[#081326] rounded-xl p-2 border border-[#142642]">
+              <i data-lucide="footprints" class="w-3.5 h-3.5 text-emerald-400 mx-auto mb-1"></i>
+              <div class="text-[16px] font-bold text-white leading-tight">8,432</div>
+              <div class="text-[10px] text-slate-400">steps</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">Steps</div>
+            </div>
+          </div>
+
+          <!-- Emerald Health Score Banner -->
+          <div class="rounded-xl bg-gradient-to-r from-[#059669] to-[#10b981] p-3.5 flex items-center justify-between gap-2 shadow-lg shadow-emerald-950/40">
+            <p class="text-[12px] font-semibold text-white leading-snug">
+              You are doing great! Keep up the good work.
+            </p>
+            <div class="flex flex-col items-center shrink-0">
+              <div class="relative w-12 h-12 flex items-center justify-center">
+                <svg class="w-12 h-12 -rotate-90" viewBox="0 0 44 44">
+                  <circle cx="22" cy="22" r="18" stroke="rgba(255,255,255,0.25)" stroke-width="4" fill="none" />
+                  <circle cx="22" cy="22" r="18" stroke="#ffffff" stroke-width="4" fill="none" stroke-dasharray="113.1" stroke-dashoffset="16.96" stroke-linecap="round" />
+                </svg>
+                <span class="absolute text-[11px] font-extrabold text-white">85%</span>
+              </div>
+              <span class="text-[9.5px] font-medium text-emerald-50 mt-0.5">Health Score</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Health Alerts Card -->
+        <div class="neo-card rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-[14px] font-bold text-white">Health Alerts</h3>
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400"></i>
+          </div>
+          <div class="space-y-2.5">
+            <div onclick="showToast('Hydration reminder logged! +250ml water')" class="cursor-pointer rounded-xl bg-gradient-to-r from-[#0284c7] to-[#00a8e8] hover:brightness-110 p-3 flex items-center gap-3 transition shadow-md">
+              <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                <i data-lucide="droplet" class="w-4 h-4 text-white"></i>
+              </div>
+              <div>
+                <div class="text-[12.5px] font-bold text-white leading-tight">Drink more water</div>
+                <div class="text-[11px] text-sky-100 mt-0.5">Stay hydrated</div>
+              </div>
+            </div>
+
+            <div onclick="navigateTo('dashboard')" class="cursor-pointer rounded-xl bg-gradient-to-r from-[#0284c7] to-[#00a8e8] hover:brightness-110 p-3 flex items-center gap-3 transition shadow-md">
+              <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                <i data-lucide="footprints" class="w-4 h-4 text-white"></i>
+              </div>
+              <div>
+                <div class="text-[12.5px] font-bold text-white leading-tight">Step goal</div>
+                <div class="text-[11px] text-sky-100 mt-0.5">1,568 steps remaining</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Medication Reminders Card -->
+        <div class="neo-card rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-[14px] font-bold text-white">Medication Reminders</h3>
+            <button onclick="navigateTo('records')" class="text-[11.5px] font-semibold text-[#00d2ff] hover:underline cursor-pointer">View All</button>
+          </div>
+          <div class="space-y-2.5" id="sidebarMedList">
+            <!-- Populated from shared medication state -->
+          </div>
+        </div>
+
+        <!-- 4. Nearest Hospital Mini Card -->
+        <div onclick="navigateTo('hospitals')" class="neo-card neo-card-hover rounded-2xl p-3.5 flex items-center gap-3 cursor-pointer">
+          <div class="w-9 h-9 rounded-xl bg-cyan-500/15 text-[#00d2ff] flex items-center justify-center shrink-0">
+            <i data-lucide="map-pin" class="w-4 h-4"></i>
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="text-[11px] text-[#00d2ff] font-medium">3.2 km away</div>
+            <div class="text-[13px] font-bold text-white truncate">City Care Hospital</div>
+          </div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </div>
+      </aside>
+    </section>
+
+    <!-- ==================== PAGE 2: SYMPTOM CHECKER ==================== -->
+    <section id="page-symptom" class="page-view hidden flex-1 flex flex-col lg:flex-row min-h-screen">
+      <!-- Left Session List Panel (~260px) -->
+      <div class="w-full lg:w-[260px] shrink-0 bg-[#071124] border-b lg:border-b-0 lg:border-r border-[#152238] p-4 flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-[15px] font-bold text-white">Symptom Checker</h3>
+          <button onclick="createNewSymptomSession()" title="New Symptom Chat" class="w-7 h-7 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#04141c] flex items-center justify-center font-bold transition cursor-pointer">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <div id="symptomSessionList" class="space-y-1.5 overflow-y-auto max-h-44 lg:max-h-[calc(100vh-110px)] pr-1">
+          <!-- 10 Medical Assistant Chat items -->
+        </div>
+      </div>
+
+      <!-- Right Analysis Panel -->
+      <div class="flex-1 flex flex-col justify-between p-5 sm:p-7 max-w-5xl mx-auto w-full">
+        <div>
+          <h2 class="text-2xl font-bold text-white">AI Symptom Analysis</h2>
+          <p class="text-sm text-slate-400 mt-1">Describe your symptoms and I will help analyze them</p>
+        </div>
+
+        <!-- Chat History Window -->
+        <div id="symptomChatMessages" class="flex-1 my-5 overflow-y-auto space-y-4 pr-1 max-h-[calc(100vh-280px)] min-h-[260px]">
+          <div class="rounded-2xl bg-[#0c1a30] border border-[#1c3152] p-4 text-sm text-slate-300 max-w-2xl">
+            <div class="flex items-center gap-2 text-[#00d2ff] font-semibold mb-1">
+              <i data-lucide="stethoscope" class="w-4 h-4"></i>
+              <span>Dr. Neo Triage Assistant</span>
+            </div>
+            Please share what symptoms you are experiencing, how long they have lasted, and their severity. You can also tap any common symptom below.
+          </div>
+        </div>
+
+        <!-- Common Symptoms Tag Bar + Bottom Input -->
+        <div class="space-y-3">
+          <div>
+            <div class="text-xs font-semibold text-slate-400 mb-2">Common Symptoms</div>
+            <div class="flex flex-wrap gap-2" id="commonSymptomTags">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+
+          <div class="rounded-2xl bg-[#0c1a30] border border-[#1e3557] focus-within:border-[#00d2ff] px-4 py-2.5 flex items-center gap-3">
+            <input
+              id="symptomInput"
+              type="text"
+              placeholder="Describe your symptoms..."
+              onkeydown="if(event.key==='Enter') sendSymptomQuery()"
+              class="flex-1 bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none"
+            />
+            <button
+              onclick="sendSymptomQuery()"
+              class="w-9 h-9 rounded-full bg-[#00b4d8] hover:bg-[#00d2ff] text-[#051326] flex items-center justify-center shrink-0 transition cursor-pointer"
+            >
+              <i data-lucide="send" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 3: HEALTH DASHBOARD ==================== -->
+    <section id="page-dashboard" class="page-view hidden flex-1 p-5 sm:p-8 max-w-6xl mx-auto w-full space-y-6">
+      <div>
+        <h2 class="text-2xl sm:text-[28px] font-bold text-white">Health Dashboard</h2>
+        <p class="text-sm text-slate-400 mt-1">Your health metrics overview</p>
+      </div>
+
+      <!-- Top 2x2 Metric Cards Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Card 1: Heart Rate -->
+        <div class="neo-card rounded-2xl p-5 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-rose-500/15 text-rose-500 flex items-center justify-center">
+              <i data-lucide="heart" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <div class="flex items-baseline gap-1.5">
+                <span class="text-3xl font-bold text-white">72</span>
+                <span class="text-xs text-slate-400">bpm</span>
+              </div>
+              <div class="text-xs text-slate-400 mt-0.5">Heart Rate</div>
+            </div>
+          </div>
+          <span class="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-semibold">+2%</span>
+        </div>
+
+        <!-- Card 2: Sleep -->
+        <div class="neo-card rounded-2xl p-5 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center">
+              <i data-lucide="moon" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <div class="flex items-baseline gap-1.5">
+                <span class="text-3xl font-bold text-white">7.6</span>
+                <span class="text-xs text-slate-400">hours</span>
+              </div>
+              <div class="text-xs text-slate-400 mt-0.5">Sleep</div>
+            </div>
+          </div>
+          <span class="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-semibold">+0.4h</span>
+        </div>
+
+        <!-- Card 3: Steps -->
+        <div class="neo-card rounded-2xl p-5 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+              <i data-lucide="footprints" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <div class="flex items-baseline gap-1.5">
+                <span class="text-3xl font-bold text-white">8,432</span>
+                <span class="text-xs text-slate-400">steps</span>
+              </div>
+              <div class="text-xs text-slate-400 mt-0.5">Steps</div>
+            </div>
+          </div>
+          <span class="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-semibold">+12%</span>
+        </div>
+
+        <!-- Card 4: Health Score -->
+        <div class="neo-card rounded-2xl p-5 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-cyan-500/15 text-[#00d2ff] flex items-center justify-center">
+              <i data-lucide="activity" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <div class="flex items-baseline gap-1.5">
+                <span class="text-3xl font-bold text-white">85%</span>
+                <span class="text-xs text-emerald-400 font-medium">Good</span>
+              </div>
+              <div class="text-xs text-slate-400 mt-0.5">Health Score</div>
+            </div>
+          </div>
+          <span class="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-xs font-semibold">+3%</span>
+        </div>
+      </div>
+
+      <!-- 3 Full-Width Interactive Area Line Charts -->
+      <div class="space-y-5">
+        <!-- Chart 1: Heart Rate -->
+        <div class="neo-card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                Heart Rate
+              </h3>
+              <p class="text-xs text-slate-400">bpm — Last 7 Days</p>
+            </div>
+          </div>
+          <div id="chart-heart" class="w-full h-52 relative"></div>
+        </div>
+
+        <!-- Chart 2: Sleep Duration -->
+        <div class="neo-card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+                Sleep Duration
+              </h3>
+              <p class="text-xs text-slate-400">hours — Last 7 Days</p>
+            </div>
+          </div>
+          <div id="chart-sleep" class="w-full h-52 relative"></div>
+        </div>
+
+        <!-- Chart 3: Daily Steps -->
+        <div class="neo-card rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                Daily Steps
+              </h3>
+              <p class="text-xs text-slate-400">steps — Last 7 Days</p>
+            </div>
+          </div>
+          <div id="chart-steps" class="w-full h-52 relative"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 4: MEDICINE SCANNER ==================== -->
+    <section id="page-medicine" class="page-view hidden flex-1 p-5 sm:p-8 max-w-4xl mx-auto w-full space-y-6">
+      <div>
+        <h2 class="text-2xl sm:text-[28px] font-bold text-white">Medicine Scanner</h2>
+        <p class="text-sm text-slate-400 mt-1">Search for medicine information and dosage</p>
+      </div>
+
+      <!-- Search & Scan Card -->
+      <div class="neo-card rounded-2xl p-5 sm:p-6 space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="flex-1 rounded-xl bg-[#071122] border border-[#1d355b] focus-within:border-[#00d2ff] px-4 py-3 flex items-center gap-3">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+            <input
+              id="medicineSearchInput"
+              type="text"
+              placeholder="Search medicine name (e.g. paracetamol, ibuprofen)"
+              onkeydown="if(event.key==='Enter') searchMedicine()"
+              class="flex-1 bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none"
+            />
+          </div>
+          <button onclick="searchMedicine()" class="px-5 py-3 rounded-xl bg-[#00b4d8] hover:bg-[#00d2ff] text-[#041224] font-bold text-sm flex items-center gap-2 transition shadow-lg shadow-cyan-500/20 cursor-pointer">
+            <i data-lucide="search" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Search</span>
+          </button>
+        </div>
+
+        <!-- Upload Photo of Medicine Package -->
+        <div class="flex flex-col sm:flex-row items-center gap-3 pt-1">
+          <input type="file" id="medicinePhotoInput" accept="image/*" class="hidden" onchange="handleMedicinePhotoUpload(event)" />
+          <button onclick="document.getElementById('medicinePhotoInput').click()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#00b4d8] hover:bg-[#00d2ff] text-[#041224] font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer">
+            <i data-lucide="camera" class="w-4 h-4"></i>
+            <span>Scan Medicine Photo</span>
+          </button>
+          <span class="text-xs text-slate-400">or upload a photo of the medicine package</span>
+        </div>
+      </div>
+
+      <!-- Common Searches -->
+      <div>
+        <div class="text-xs font-semibold text-slate-400 mb-2.5">Common searches</div>
+        <div class="flex flex-wrap gap-2.5">
+          <button onclick="quickSearchMedicine('Paracetamol')" class="px-4 py-2 rounded-xl bg-[#0c1a30] hover:bg-[#132849] border border-[#1d355b] text-xs font-medium text-slate-200 transition cursor-pointer">Paracetamol</button>
+          <button onclick="quickSearchMedicine('Ibuprofen')" class="px-4 py-2 rounded-xl bg-[#0c1a30] hover:bg-[#132849] border border-[#1d355b] text-xs font-medium text-slate-200 transition cursor-pointer">Ibuprofen</button>
+          <button onclick="quickSearchMedicine('Amoxicillin')" class="px-4 py-2 rounded-xl bg-[#0c1a30] hover:bg-[#132849] border border-[#1d355b] text-xs font-medium text-slate-200 transition cursor-pointer">Amoxicillin</button>
+        </div>
+      </div>
+
+      <!-- Dynamic Gemini Medicine Result Card -->
+      <div id="medicineResultContainer" class="hidden neo-card rounded-2xl p-6 space-y-4"></div>
+    </section>
+
+    <!-- ==================== PAGE 5: MENTAL WELLNESS ==================== -->
+    <section id="page-wellness" class="page-view hidden flex-1 p-5 sm:p-8 max-w-4xl mx-auto w-full space-y-6">
+      <div>
+        <h2 class="text-2xl sm:text-[28px] font-bold text-white">Mental Wellness</h2>
+        <p class="text-sm text-slate-400 mt-1">Track your mood and mental health</p>
+      </div>
+
+      <!-- How are you feeling today? Mood Card -->
+      <div class="neo-card rounded-2xl p-5 sm:p-6 space-y-5">
+        <h3 class="text-base font-bold text-white">How are you feeling today?</h3>
+
+        <div class="grid grid-cols-5 gap-2.5 sm:gap-4" id="moodSelectorGrid">
+          <!-- Rendered via JS -->
+        </div>
+
+        <!-- Expandable Mood Support Box (shown when a mood like Stressed is clicked) -->
+        <div id="moodDetailBox" class="hidden pt-2 space-y-3 border-t border-[#182d4d]">
+          <textarea
+            id="moodReflectionInput"
+            rows="3"
+            placeholder="Tell me more about how you are feeling..."
+            class="w-full rounded-xl bg-[#071122] border border-[#1d355b] focus:border-[#00d2ff] p-3.5 text-sm text-white placeholder-slate-400 focus:outline-none"
+          ></textarea>
+          <div class="flex items-center justify-between gap-3">
+            <span id="selectedMoodBadge" class="text-xs text-slate-400"></span>
+            <button onclick="getMentalWellnessSupport()" class="px-5 py-2.5 rounded-xl bg-[#00b4d8] hover:bg-[#00d2ff] text-[#041224] font-bold text-xs flex items-center gap-2 transition cursor-pointer">
+              <i data-lucide="sparkles" class="w-4 h-4"></i>
+              <span>Get AI Support</span>
+            </button>
+          </div>
+          <div id="wellnessAiResponse" class="hidden rounded-xl bg-[#081529] border border-cyan-500/30 p-4 text-sm text-slate-200 ai-prose"></div>
+        </div>
+      </div>
+
+      <!-- Wellness Exercises -->
+      <div class="space-y-3.5">
+        <h3 class="text-base font-bold text-white">Wellness Exercises</h3>
+
+        <div class="space-y-3" id="wellnessExercisesList">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 6: EMERGENCY HELP ==================== -->
+    <section id="page-emergency" class="page-view hidden flex-1 p-5 sm:p-8 max-w-4xl mx-auto w-full space-y-6">
+      <!-- Top Red Gradient Banner -->
+      <div class="rounded-2xl bg-gradient-to-r from-[#5a1218] via-[#450e13] to-[#2c0a0e] border border-[#881b24] p-6 flex items-center justify-between gap-4 shadow-xl shadow-red-950/30">
+        <div class="flex items-start gap-4">
+          <div class="w-11 h-11 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center shrink-0 mt-0.5">
+            <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h2 class="text-xl sm:text-2xl font-bold text-white">Emergency SOS</h2>
+            <p class="text-xs sm:text-sm text-red-200/80 mt-1">If you are in immediate danger, call emergency services</p>
+          </div>
+        </div>
+        <button onclick="triggerSosModal('112 - National Emergency')" class="w-16 h-16 rounded-full bg-[#ef4444] hover:bg-[#dc2626] text-white flex flex-col items-center justify-center shrink-0 shadow-lg shadow-red-600/50 transition hover:scale-105 cursor-pointer">
+          <i data-lucide="phone-call" class="w-5 h-5"></i>
+          <span class="text-[11px] font-extrabold mt-0.5">SOS</span>
+        </button>
+      </div>
+
+      <!-- Emergency Numbers -->
+      <div class="space-y-3">
+        <h3 class="text-base font-bold text-white">Emergency Numbers</h3>
+        <div class="space-y-2.5">
+          <div onclick="triggerSosModal('Emergency (112)')" class="neo-card hover:border-red-500/50 rounded-xl p-4 flex items-center justify-between cursor-pointer transition">
+            <div class="flex items-center gap-3.5">
+              <div class="w-10 h-10 rounded-xl bg-red-500/15 text-red-400 flex items-center justify-center">
+                <i data-lucide="phone" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-sm font-bold text-white">Emergency (112)</div>
+                <div class="text-xs text-slate-400">General emergency services</div>
+              </div>
+            </div>
+            <span class="text-lg font-extrabold text-red-400">112</span>
+          </div>
+
+          <div onclick="triggerSosModal('Ambulance (108)')" class="neo-card hover:border-red-500/50 rounded-xl p-4 flex items-center justify-between cursor-pointer transition">
+            <div class="flex items-center gap-3.5">
+              <div class="w-10 h-10 rounded-xl bg-red-500/15 text-red-400 flex items-center justify-center">
+                <i data-lucide="ambulance" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-sm font-bold text-white">Ambulance (108)</div>
+                <div class="text-xs text-slate-400">Medical emergency ambulance</div>
+              </div>
+            </div>
+            <span class="text-lg font-extrabold text-red-400">108</span>
+          </div>
+
+          <div onclick="triggerSosModal('Police (100)')" class="neo-card hover:border-red-500/50 rounded-xl p-4 flex items-center justify-between cursor-pointer transition">
+            <div class="flex items-center gap-3.5">
+              <div class="w-10 h-10 rounded-xl bg-red-500/15 text-red-400 flex items-center justify-center">
+                <i data-lucide="shield-alert" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-sm font-bold text-white">Police (100)</div>
+                <div class="text-xs text-slate-400">Police emergency</div>
+              </div>
+            </div>
+            <span class="text-lg font-extrabold text-red-400">100</span>
+          </div>
+
+          <div onclick="triggerSosModal('Fire (101)')" class="neo-card hover:border-red-500/50 rounded-xl p-4 flex items-center justify-between cursor-pointer transition">
+            <div class="flex items-center gap-3.5">
+              <div class="w-10 h-10 rounded-xl bg-red-500/15 text-red-400 flex items-center justify-center">
+                <i data-lucide="flame" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-sm font-bold text-white">Fire (101)</div>
+                <div class="text-xs text-slate-400">Fire emergency</div>
+              </div>
+            </div>
+            <span class="text-lg font-extrabold text-red-400">101</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- First Aid Guide -->
+      <div class="space-y-3">
+        <h3 class="text-base font-bold text-white">First Aid Guide</h3>
+        <div class="space-y-3">
+          <!-- Heart Attack -->
+          <div class="neo-card rounded-2xl p-5">
+            <div class="flex items-center gap-2.5 mb-3.5">
+              <i data-lucide="heart-pulse" class="w-5 h-5 text-red-400"></i>
+              <h4 class="text-sm font-bold text-white">Heart Attack</h4>
+            </div>
+            <div class="space-y-2 text-xs text-slate-300">
+              <div class="flex items-center gap-2.5"><span class="w-5 h-5 rounded-full bg-red-500/20 text-red-400 font-bold flex items-center justify-center text-[11px]">1</span>Call 112 immediately</div>
+              <div class="flex items-center gap-2.5"><span class="w-5 h-5 rounded-full bg-red-500/20 text-red-400 font-bold flex items-center justify-center text-[11px]">2</span>Have person sit or lie comfortably</div>
+              <div class="flex items-center gap-2.5"><span class="w-5 h-5 rounded-full bg-red-500/20 text-red-400 font-bold flex items-center justify-center text-[11px]">3</span>Loosen tight clothing</div>
+              <div class="flex items-center gap-2.5"><span class="w-5 h-5 rounded-full bg-red-500/20 text-red-400 font-bold flex items-center justify-center text-[11px]">4</span>Begin CPR if unconscious</div>
+            </div>
+          </div>
+
+          <!-- Choking -->
+          <div class="neo-card rounded-2xl p-5">
+            <div class="flex items-center gap-2.5 mb-3.5">
+              <i data-lucide="heart-pulse" class="w-5 h-5 text-red-400"></i>
+              <h4 class="text-sm font-bold text-white">Choking</h4>
+            </div>
+            <div class="space-y-2 text-xs text-slate-300">
+              <div class="flex items-center gap-2.5"><span class="w-5 h-5 rounded-full bg-red-500/20 text-red-400 font-bold flex items-center justify-center text-[11px]">1</span>Ask if they are choking</div>
+              <div class="flex items-center gap-2.5"><span class="w-5 h-5 rounded-full bg-red-500/20 text-red-400 font-bold flex items-center justify-center text-[11px]">2</span>Perform Heimlich maneuver</div>
+              <div class="flex items-center gap-2.5"><span class="w-5 h-5 rounded-full bg-red-500/20 text-red-400 font-bold flex items-center justify-center text-[11px]">3</span>Call 112 if unresolved</div>
+              <div class="flex items-center gap-2.5"><span class="w-5 h-5 rounded-full bg-red-500/20 text-red-400 font-bold flex items-center justify-center text-[11px]">4</span>Continue until cleared</div>
+            </div>
+          </div>
+
+          <!-- Severe Bleeding -->
+          <div class="neo-card rounded-2xl p-5">
+            <div class="flex items-center gap-2.5 mb-3.5">
+              <i data-lucide="heart-pulse" class="w-5 h-5 text-red-400"></i>
+              <h4 class="text-sm font-bold text-white">Severe Bleeding</h4>
+            </div>
+            <div class="space-y-2 text-xs text-slate-300">
+              <div class="flex items-center gap-2.5"><span class="w-5 h-5 rounded-full bg-red-500/20 text-red-400 font-bold flex items-center justify-center text-[11px]">1</span>Apply firm pressure</div>
+              <div class="flex items-center gap-2.5"><span class="w-5 h-5 rounded-full bg-red-500/20 text-red-400 font-bold flex items-center justify-center text-[11px]">2</span>Elevate injured area</div>
+              <div class="flex items-center gap-2.5"><span class="w-5 h-5 rounded-full bg-red-500/20 text-red-400 font-bold flex items-center justify-center text-[11px]">3</span>Apply bandage over cloth</div>
+              <div class="flex items-center gap-2.5"><span class="w-5 h-5 rounded-full bg-red-500/20 text-red-400 font-bold flex items-center justify-center text-[11px]">4</span>Call 112 immediately</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Share Your Location Toggle Card -->
+      <div class="neo-card rounded-2xl p-4 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/15 text-[#00d2ff] flex items-center justify-center shrink-0">
+            <i data-lucide="map-pin" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="text-sm font-bold text-white">Share Your Location</div>
+            <div class="text-xs text-slate-400 mt-0.5">Your location will be shared with emergency services when you call SOS</div>
+          </div>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer shrink-0">
+          <input type="checkbox" checked class="sr-only peer" onchange="showToast(this.checked ? 'Live GPS location sharing enabled for SOS' : 'Location sharing paused')" />
+          <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00b4d8]"></div>
+        </label>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 7: HEALTH RECORDS ==================== -->
+    <section id="page-records" class="page-view hidden flex-1 p-5 sm:p-8 max-w-4xl mx-auto w-full space-y-6">
+      <div>
+        <h2 class="text-2xl sm:text-[28px] font-bold text-white">Health Records</h2>
+        <p class="text-sm text-slate-400 mt-1">Your medical history and records</p>
+      </div>
+
+      <!-- Recent Records -->
+      <div class="space-y-3">
+        <h3 class="text-base font-bold text-white">Recent Records</h3>
+        <div class="space-y-2.5" id="recentRecordsList">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+
+      <!-- Medication Reminders -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-base font-bold text-white">Medication Reminders</h3>
+          <button onclick="openAddMedicationModal()" class="text-xs font-semibold text-[#00d2ff] hover:underline flex items-center gap-1 cursor-pointer">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Add Medication</span>
+          </button>
+        </div>
+        <div class="space-y-2.5" id="recordsMedList">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 8: FIND HOSPITALS ==================== -->
+    <section id="page-hospitals" class="page-view hidden flex-1 p-5 sm:p-8 max-w-4xl mx-auto w-full space-y-6">
+      <div>
+        <h2 class="text-2xl sm:text-[28px] font-bold text-white">Find Hospitals</h2>
+        <p class="text-sm text-slate-400 mt-1">Nearby hospitals and medical centers</p>
+      </div>
+
+      <!-- Map View Banner -->
+      <div class="rounded-2xl bg-[#0b192e] border border-[#1c3152] h-44 flex flex-col items-center justify-center gap-2.5 text-center p-4 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-15 bg-[radial-gradient(#00d2ff_1px,transparent_1px)] [background-size:20px_20px]"></div>
+        <div class="w-11 h-11 rounded-full bg-cyan-500/15 text-[#00d2ff] flex items-center justify-center relative z-10">
+          <i data-lucide="map-pin" class="w-6 h-6"></i>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-300 font-medium relative z-10">Map view — showing nearby facilities</p>
+      </div>
+
+      <!-- Hospital Cards Stack -->
+      <div class="space-y-4" id="hospitalCardsList">
+        <!-- Populated via JS -->
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 9: AI HEALTH COACH (Warm Light/Cream Pane) ==================== -->
+    <section id="page-coach" class="page-view hidden flex-1 flex flex-col lg:flex-row min-h-screen bg-[#fdf8f6] text-slate-800">
+      <!-- Left Sub-Panel (#f8f5f2) -->
+      <div class="w-full lg:w-[270px] shrink-0 bg-[#f8f5f2] border-b lg:border-b-0 lg:border-r border-[#ece4de] p-4 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3.5">
+            <div class="flex items-center gap-2">
+              <i data-lucide="heart" class="w-4 h-4 text-[#f46b75] fill-[#f46b75]"></i>
+              <h3 class="text-sm font-bold text-slate-800">Health Coach</h3>
+            </div>
+            <button onclick="resetCoachSession()" title="New Coaching Session" class="w-7 h-7 rounded-lg bg-white hover:bg-rose-50 border border-[#e6dcd5] text-slate-700 flex items-center justify-center transition cursor-pointer">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- 8 Medical Assistant Chat Items -->
+          <div id="coachSessionList" class="space-y-1 max-h-48 lg:max-h-64 overflow-y-auto pr-1">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Suggested Topics at Bottom -->
+        <div class="mt-4 pt-3 border-t border-[#e8dfd8]">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Suggested Topics</div>
+          <div class="space-y-1.5" id="coachSuggestedTopics">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Chat Canvas (#fdf8f6) -->
+      <div class="flex-1 flex flex-col justify-between p-5 sm:p-7 max-w-4xl mx-auto w-full">
+        <!-- Top Header -->
+        <div class="flex items-center justify-between pb-4 border-b border-[#efe6e0]">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">AI Health Coach</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Your caring wellness companion</p>
+          </div>
+          <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Online</span>
+          </div>
+        </div>
+
+        <!-- Center Stage: Initial Hero State OR Active Chat Messages -->
+        <div id="coachHeroState" class="flex-1 flex flex-col items-center justify-center text-center py-10 px-4">
+          <div class="w-16 h-16 rounded-full bg-rose-100 text-[#f46b75] flex items-center justify-center mb-4 shadow-sm">
+            <i data-lucide="heart" class="w-8 h-8 fill-[#f46b75]"></i>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900">Your wellness journey starts here</h3>
+          <p class="text-sm text-slate-500 mt-1 max-w-md">Start a session to talk with Dr. Neo</p>
+          <button onclick="startCoachSession()" class="mt-5 px-6 py-2.5 rounded-full bg-[#f46b75] hover:bg-[#e15560] text-white font-semibold text-sm shadow-md shadow-rose-300/50 transition cursor-pointer">
+            Start a Session
+          </button>
+        </div>
+
+        <div id="coachActiveChat" class="hidden flex-1 my-4 overflow-y-auto space-y-3.5 pr-1 max-h-[calc(100vh-240px)]">
+          <!-- Chat bubbles rendered here -->
+        </div>
+
+        <!-- Bottom Input + Disclaimer -->
+        <div class="space-y-2 pt-2">
+          <div class="rounded-2xl bg-white border border-[#e6dcd5] focus-within:border-[#f46b75] px-4 py-2.5 flex items-center gap-3 shadow-sm">
+            <input
+              id="coachChatInput"
+              type="text"
+              placeholder="Tell me how you are feeling..."
+              onkeydown="if(event.key==='Enter') sendCoachMessage()"
+              class="flex-1 bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none"
+            />
+            <button
+              onclick="sendCoachMessage()"
+              class="w-9 h-9 rounded-full bg-[#f46b75] hover:bg-[#e15560] text-white flex items-center justify-center shrink-0 transition cursor-pointer"
+            >
+              <i data-lucide="send" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <p class="text-center text-[11px] text-slate-400">For emergencies, always call 112 immediately</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 10: SETTINGS ==================== -->
+    <section id="page-settings" class="page-view hidden flex-1 p-5 sm:p-8 max-w-4xl mx-auto w-full space-y-6">
+      <div>
+        <h2 class="text-2xl sm:text-[28px] font-bold text-white">Settings</h2>
+        <p class="text-sm text-slate-400 mt-1">Manage your preferences</p>
+      </div>
+
+      <!-- User Profile Card -->
+      <div class="neo-card rounded-2xl p-5 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-full bg-gradient-to-br from-[#00d2ff] to-[#0284c7] flex items-center justify-center text-[#041224] font-extrabold text-lg shrink-0 shadow-lg shadow-cyan-500/20">
+            <i data-lucide="pause" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Aarav Sharma</h3>
+            <p class="text-xs text-slate-400">aarav.sharma@email.com</p>
+            <span class="inline-block text-xs font-semibold text-[#00d2ff] mt-0.5">Premium Member</span>
+          </div>
+        </div>
+        <span class="hidden sm:inline-flex px-3.5 py-1.5 rounded-full bg-[#00b4d8] text-[#041224] text-xs font-bold">Active</span>
+      </div>
+
+      <!-- PROFILE Section -->
+      <div class="space-y-2.5">
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">Profile</div>
+        <div class="neo-card rounded-2xl divide-y divide-[#162947]">
+          <div onclick="showToast('Personal Info: Aarav Sharma · Age 29 · Blood Group O+')" class="p-4 flex items-center justify-between hover:bg-[#0f203b] transition cursor-pointer rounded-t-2xl">
+            <div class="flex items-center gap-3.5">
+              <div class="w-9 h-9 rounded-xl bg-cyan-500/15 text-[#00d2ff] flex items-center justify-center">
+                <i data-lucide="user" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <div class="text-sm font-semibold text-white">Personal Information</div>
+                <div class="text-xs text-slate-400">Name, age, blood type</div>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+          </div>
+
+          <div onclick="showToast('Health Profile: Mild Vitamin D Deficiency · No known drug allergies')" class="p-4 flex items-center justify-between hover:bg-[#0f203b] transition cursor-pointer rounded-b-2xl">
+            <div class="flex items-center gap-3.5">
+              <div class="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+                <i data-lucide="heart-pulse" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <div class="text-sm font-semibold text-white">Health Profile</div>
+                <div class="text-xs text-slate-400">Medical history, allergies</div>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS Section -->
+      <div class="space-y-2.5">
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">Notifications</div>
+        <div class="neo-card rounded-2xl divide-y divide-[#162947]">
+          <div class="p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3.5">
+              <div class="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center">
+                <i data-lucide="bell" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <div class="text-sm font-semibold text-white">Medication Reminders</div>
+                <div class="text-xs text-slate-400">Get notified for medicines</div>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" checked class="sr-only peer" onchange="showToast('Medication reminders updated')" />
+              <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00b4d8]"></div>
+            </label>
+          </div>
+
+          <div class="p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3.5">
+              <div class="w-9 h-9 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center">
+                <i data-lucide="activity" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <div class="text-sm font-semibold text-white">Health Alerts</div>
+                <div class="text-xs text-slate-400">Weekly health summary</div>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" checked class="sr-only peer" onchange="showToast('Health alerts preference saved')" />
+              <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#00b4d8]"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- GEMINI AI CONFIGURATION Section -->
+      <div class="space-y-2.5">
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">Gemini AI Configuration</div>
+        <div class="neo-card rounded-2xl p-4 space-y-3">
+          <div class="flex items-center gap-3.5">
+            <div class="w-9 h-9 rounded-xl bg-cyan-500/15 text-[#00d2ff] flex items-center justify-center shrink-0">
+              <i data-lucide="key" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold text-white">Gemini API Key</div>
+              <div class="text-xs text-slate-400">Enter your Google Gemini API key to enable live AI responses</div>
+            </div>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2.5 pt-1">
+            <input
+              id="settingsApiKeyInput"
+              type="password"
+              placeholder="AIzaSy..."
+              class="flex-1 rounded-xl bg-[#071122] border border-[#1d355b] focus:border-[#00d2ff] px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none"
+            />
+            <button onclick="saveApiKeyFromSettings()" class="px-5 py-2.5 rounded-xl bg-[#00b4d8] hover:bg-[#00d2ff] text-[#041224] font-bold text-xs transition cursor-pointer">
+              Save API Key
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABOUT Section -->
+      <div class="space-y-2.5">
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">About</div>
+        <div class="neo-card rounded-2xl divide-y divide-[#162947]">
+          <div class="p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3.5">
+              <div class="w-9 h-9 rounded-xl bg-slate-500/15 text-slate-300 flex items-center justify-center">
+                <i data-lucide="info" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <div class="text-sm font-semibold text-white">About AI Medical Assistant</div>
+                <div class="text-xs text-slate-400">Version 1.0.0</div>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+          </div>
+
+          <div onclick="showToast('All health queries are processed securely via Google Gemini API.')" class="p-4 flex items-center justify-between hover:bg-[#0f203b] transition cursor-pointer rounded-b-2xl">
+            <div class="flex items-center gap-3.5">
+              <div class="w-9 h-9 rounded-xl bg-slate-500/15 text-slate-300 flex items-center justify-center">
+                <i data-lucide="shield-check" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <div class="text-sm font-semibold text-white">Privacy Policy</div>
+                <div class="text-xs text-slate-400">How we use your data</div>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- MODALS & TOAST NOTIFICATIONS (No alert() or confirm() used)           -->
+  <!-- ===================================================================== -->
+
+  <!-- API Key Configuration Modal -->
+  <div id="apiKeyModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="neo-card rounded-2xl max-w-md w-full p-6 space-y-4 border border-cyan-500/30">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-cyan-500/15 text-[#00d2ff] flex items-center justify-center">
+            <i data-lucide="key-round" class="w-5 h-5"></i>
+          </div>
+          <h3 class="text-base font-bold text-white">Configure Gemini API Key</h3>
+        </div>
+        <button onclick="closeModal('apiKeyModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <p class="text-xs text-slate-300 leading-relaxed">
+        Paste your Google Gemini API key below (saved locally in your browser) or set <code class="text-cyan-300">GEMINI_API_KEY</code> at the top of the script.
+      </p>
+      <input
+        id="modalApiKeyInput"
+        type="password"
+        placeholder="AIzaSy..."
+        class="w-full rounded-xl bg-[#071122] border border-[#1d355b] focus:border-[#00d2ff] px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none"
+      />
+      <div class="flex justify-end gap-2.5 pt-1">
+        <button onclick="closeModal('apiKeyModal')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 cursor-pointer">Cancel</button>
+        <button onclick="saveApiKeyFromModal()" class="px-5 py-2 rounded-xl bg-[#00b4d8] hover:bg-[#00d2ff] text-[#041224] text-xs font-bold cursor-pointer">Save Key</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Guided Wellness Exercise Timer Modal -->
+  <div id="exerciseModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="neo-card rounded-2xl max-w-md w-full p-6 text-center space-y-5 border border-cyan-500/30">
+      <div class="flex items-center justify-between">
+        <span id="exerciseModalTitle" class="text-base font-bold text-white">Deep Breathing</span>
+        <button onclick="stopWellnessExercise()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="w-32 h-32 mx-auto rounded-full bg-cyan-500/10 border-2 border-[#00d2ff] flex flex-col items-center justify-center shadow-lg shadow-cyan-500/20">
+        <span id="exerciseTimerDisplay" class="text-2xl font-extrabold text-white">05:00</span>
+        <span id="exercisePhaseText" class="text-[11px] text-[#00d2ff] font-semibold mt-1">Inhale slowly...</span>
+      </div>
+      <p id="exerciseModalDesc" class="text-xs text-slate-300 leading-relaxed"></p>
+      <button onclick="stopWellnessExercise()" class="w-full py-2.5 rounded-xl bg-[#00b4d8] hover:bg-[#00d2ff] text-[#041224] font-bold text-xs cursor-pointer">Complete Session</button>
+    </div>
+  </div>
+
+  <!-- Emergency SOS Call Simulation Modal -->
+  <div id="sosModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="rounded-2xl bg-[#2a090d] border border-red-500/60 max-w-sm w-full p-6 text-center space-y-4 shadow-2xl">
+      <div class="w-16 h-16 mx-auto rounded-full bg-red-600 text-white flex items-center justify-center animate-pulse">
+        <i data-lucide="phone-call" class="w-8 h-8"></i>
+      </div>
+      <h3 id="sosModalTitle" class="text-lg font-bold text-white">Calling Emergency (112)...</h3>
+      <p class="text-xs text-red-200">Dispatching GPS coordinates and Aarav Sharma's medical profile to nearest emergency responders.</p>
+      <button onclick="closeModal('sosModal')" class="w-full py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs cursor-pointer">End Emergency Call</button>
+    </div>
+  </div>
+
+  <!-- Medical Record Viewer Modal -->
+  <div id="recordModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="neo-card rounded-2xl max-w-lg w-full p-6 space-y-4 border border-cyan-500/30">
+      <div class="flex items-center justify-between">
+        <h3 id="recordModalTitle" class="text-base font-bold text-white">Record Details</h3>
+        <button onclick="closeModal('recordModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div id="recordModalBody" class="text-xs text-slate-300 space-y-2 leading-relaxed bg-[#071122] p-4 rounded-xl border border-[#1a2f4e]"></div>
+      <div class="flex justify-end">
+        <button onclick="closeModal('recordModal')" class="px-5 py-2 rounded-xl bg-[#00b4d8] text-[#041224] font-bold text-xs cursor-pointer">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Medication Modal -->
+  <div id="addMedModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="neo-card rounded-2xl max-w-md w-full p-6 space-y-4 border border-cyan-500/30">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white">Add Medication Reminder</h3>
+        <button onclick="closeModal('addMedModal')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="space-y-3">
+        <input id="newMedName" type="text" placeholder="Medicine Name (e.g. Vitamin C)" class="w-full rounded-xl bg-[#071122] border border-[#1d355b] px-3.5 py-2.5 text-xs text-white focus:outline-none" />
+        <input id="newMedNote" type="text" placeholder="Dosage & Timing (e.g. 1 Tablet after lunch)" class="w-full rounded-xl bg-[#071122] border border-[#1d355b] px-3.5 py-2.5 text-xs text-white focus:outline-none" />
+        <input id="newMedTime" type="text" placeholder="Time (e.g. 02:00 PM)" class="w-full rounded-xl bg-[#071122] border border-[#1d355b] px-3.5 py-2.5 text-xs text-white focus:outline-none" />
+      </div>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeModal('addMedModal')" class="px-4 py-2 rounded-xl bg-slate-800 text-xs font-semibold text-slate-300 cursor-pointer">Cancel</button>
+        <button onclick="saveNewMedication()" class="px-5 py-2 rounded-xl bg-[#00b4d8] text-[#041224] text-xs font-bold cursor-pointer">Add Reminder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Toast Notification -->
+  <div id="toastBanner" class="fixed bottom-5 right-5 z-50 hidden items-center gap-2.5 px-4 py-3 rounded-xl bg-[#0c1e38] border border-cyan-500/40 text-xs font-medium text-white shadow-2xl">
+    <i data-lucide="check-circle-2" class="w-4 h-4 text-[#00d2ff] shrink-0"></i>
+    <span id="toastMessage">Action completed</span>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- APPLICATION LOGIC & GOOGLE GEMINI API INTEGRATION                     -->
+  <!-- ===================================================================== -->
+  <script src="script.js"></script>
+</body>
+</html>
